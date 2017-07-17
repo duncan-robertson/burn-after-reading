@@ -1,12 +1,12 @@
-/*global $*/
+/* global $ */
 
-$(document).ready( () => {
-  $('#encrypt').click( () => {
+$(document).ready(() => {
+  $('#encrypt').click(() => {
     var errorbox = $('#error')
     errorbox.html = ''
     $.post('/encrypt', {text: $('#message').val()})
-    .done( (result) => {
-      if(result.success) {
+    .done((result) => {
+      if (result.success) {
         $('#id').val(result.id)
         $('#key').val(result.key)
         $('#count').val(result.count)
