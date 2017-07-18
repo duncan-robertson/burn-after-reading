@@ -1,12 +1,9 @@
 const express = require('express')
 const app = express()
-const aesjs = require('aes-js')
-const Ctr = aesjs.ModeOfOperation.ctr
-const crypto = require('crypto')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const secrets = require('./secrets')
-const util = require('./util')
+const utils = require('./utils')
 const Document = require('./models/Document')
 const port = secrets.port
 const ip = secrets.ip
@@ -24,38 +21,25 @@ app.get('/', (req, res) => {
 
 app.post('/encrypt', (req, res) => {
   var text = req.body.text
-  var key
-  var count
   var response = {}
 
-  new Promise((resolve, reject) => {
-    if (text) {
-      key = crypto.randomBytes(16)
-      count = crypto.randomBytes(16)
-
-      var aesCtr = new Ctr(key, new aesjs.Counter(count))
-      text = aesjs.utils.utf8.toBytes(text)
-
-      var encryptedBytes = aesCtr.encrypt(text)
-      resolve(new Document({data: util.byteArrayToHex(encryptedBytes)}).save())
-    } else {
-      response.success = false
-      reject(new Error('No data given to encrypt'))
-    }
+  utils.encrypt(text)
+  .then((result) => {
+    response.key = result.key
+    response.count = result.count
+    return new Document({data: utils.byteArrayToHex(result.encrypted)}).save()
   })
   .then((document) => {
     if (document) {
       response.success = true
       response.id = document._id
-      response.key = key.toString('hex')
-      response.count = count.toString('hex')
     } else {
-      response.success = false
+      response = {success: false}
     }
   })
   .catch((err) => {
     console.log(err)
-    response.success = false
+    response = {success: false}
   })
   .then(() => {
     res.json(response)
@@ -63,27 +47,17 @@ app.post('/encrypt', (req, res) => {
 })
 
 app.post('/decrypt', (req, res) => {
+  var id = req.body.id
   var key = req.body.key
   var count = req.body.count
-  var encrypted = req.body.encrypted
-  var response = {}
 
-  if (key && count && encrypted) {
-    key = util.hexToByteArray(key)
-    count = util.hexToByteArray(count)
-    encrypted = util.hexToByteArray(encrypted)
-
-    var aesCtr = new Ctr(key, new aesjs.Counter(count))
-    var decrypted = aesjs.utils.utf8.fromBytes(aesCtr.decrypt(encrypted))
-
-    response.success = true
-    response.message = decrypted
-  } else {
-    response.success = false
-    response.message = 'Malformed request'
-  }
-
-  res.json(response)
+  utils.decrypt(id, key, count)
+  .then((result) => {
+    res.json({success: true, message: result})
+  })
+  .catch((err) => {
+    res.json({success: false, message: err.message})
+  })
 })
 
 app.get('/:id([A-Fa-f0-9]{24})', (req, res) => {
@@ -91,33 +65,12 @@ app.get('/:id([A-Fa-f0-9]{24})', (req, res) => {
   var key = req.query.key
   var count = req.query.count
 
-  Document.findById(id)
+  utils.decrypt(id, key, count)
   .then((result) => {
-    if (result) {
-      if (key && count) {
-        key = util.hexToByteArray(key)
-        count = util.hexToByteArray(count)
-
-        var aesCtr = new Ctr(key, new aesjs.Counter(count))
-        var encrypted = util.hexToByteArray(result.data)
-        var decrypted = aesjs.utils.utf8.fromBytes(aesCtr.decrypt(encrypted))
-
-        res.render('decrypt.ejs', {message: decrypted})
-        Document.remove(result)
-        .catch((err) => {
-          console.log('There was an error removing message ' + id + ' from the database!')
-          console.error(err)
-        })
-      } else {
-        res.render('decrypt.ejs', {message: result.data})
-      }
-    } else {
-      res.render('sorry.ejs', {message: 'no entry exists for this page'})
-    }
+    res.render('decrypt.ejs', {message: result})
   })
   .catch((err) => {
-    console.log(err)
-    res.render('sorry.ejs', {message: 'There was an error decrypting your data, try again later'})
+    res.render('sorry.ejs', {message: err.message})
   })
 })
 
