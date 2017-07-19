@@ -11,6 +11,7 @@ $(document).ready(() => {
         $('#key').val(result.key)
         $('#count').val(result.count)
         $('#sharable').val(window.location + result.id + '?key=' + result.key + '&count=' + result.count)
+        $("#resultbox").removeClass('hidden')
       } else {
         errorbox.html('An error occurred, try again')
       }

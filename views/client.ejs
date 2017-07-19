@@ -22,29 +22,44 @@
 
       <span id="error text-danger"></span>
 
-      <form class="form" >
-        <div class="form-group">
-          <label for="sharable">Access link</label>
-          <input type="text" class="form-control" id="sharable">
+      <div id="resultbox" class="hidden">
+        <form class="form" >
+          <div class="form-group">
+            <label for="sharable">Access link: </label>
+            <span class="text-warning">The first person who uses this link will be able to view the secret then it will be deleted</span>
+            <input type="text" class="form-control" id="sharable">
+          </div>
+        </form>
+        
+        <div class="panel-group">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" href="#collapse1">Advanced</a>
+              </h4>
+            </div>
+            <div id="collapse1" class="panel-collapse collapse">
+              <div class="panel-body">
+                <p>These variables can be used in a post query to retrive your secret</p>
+                <form class="form-inline" style="margin-top: 5%">
+                  <div class="form-group">
+                    <label for="key">key:</label>
+                    <input type="text" class="form-control" id="key">
+                  </div>
+                  <div class="form-group">
+                    <label for="count">count:</label>
+                    <input type="text" class="form-control" id="count">
+                  </div>
+                  <div class="form-group">
+                    <label for="id">id:</label>
+                    <input type="text" class="form-control" id="id">
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
-
-      <span class="text-warning">The first person who uses this link will be able to view the secret then it will be deleted</span>
-
-      <form class="form-inline" style="margin-top: 5%">
-        <div class="form-group">
-          <label for="key">key:</label>
-          <input type="text" class="form-control" id="key">
-        </div>
-        <div class="form-group">
-          <label for="count">count:</label>
-          <input type="text" class="form-control" id="count">
-        </div>
-        <div class="form-group">
-          <label for="id">id:</label>
-          <input type="text" class="form-control" id="id">
-        </div>
-      </form>
+      </div>
     </div>
   </body>
 
