@@ -3,7 +3,7 @@
 $(document).ready(() => {
   $('#encrypt').click(() => {
     var errorbox = $('#error')
-    errorbox.html = ''
+    errorbox.html('')
     $.post('/encrypt', {text: $('#message').val()})
     .done((result) => {
       if (result.success) {
